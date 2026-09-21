@@ -1,115 +1,147 @@
 import React, { useState } from 'react';
-import { Play, Maximize2, X, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Play, X, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { GALLERY_CATEGORIES, GALLERY_ITEMS } from '../data/projectsData';
 
 export default function GalleryPage({ onOpenRFQ }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const fallbackHeroImage = 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1600&q=80';
+  const fallbackCardImage = 'https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=1200&q=80';
+
   const filteredItems = GALLERY_ITEMS.filter(
     (item) => activeCategory === 'all' || item.category === activeCategory
   );
 
-  // Group items by section when 'all' is selected
   const sections =
     activeCategory === 'all'
-      ? Array.from(new Set(GALLERY_ITEMS.map((item) => item.sectionTitle)))
-      : [GALLERY_ITEMS.find((i) => i.category === activeCategory)?.sectionTitle || 'Gallery'];
+      ? [...new Set(GALLERY_ITEMS.map((item) => item.sectionTitle))]
+      : [
+          GALLERY_ITEMS.find((item) => item.category === activeCategory)
+            ?.sectionTitle || 'Gallery',
+        ];
 
   return (
-    <div className="space-y-12 pb-16 bg-slate-50 min-h-screen">
+    <main className="min-h-screen bg-slate-50 pb-16 font-sans">
       
-      {/* Top Header Banner */}
-      <section className="bg-gradient-to-r from-brand-dark via-slate-900 to-brand-dark text-white py-14 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-3">
-          <span className="bg-red-600/30 text-red-400 text-xs font-bold uppercase tracking-widest px-3.5 py-1 rounded-full border border-red-500/40">
-            Industrial Video & Photo Portfolio
-          </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Robotic Welding Systems & Automation Gallery
-          </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-3xl mx-auto leading-relaxed">
-            Explore turnkey robotic welding lines, two-wheeler frame cells, four-wheeler automotive lines, railway component automation, and custom Special Purpose Machines (SPMs).
-          </p>
+      {/* 1. HERO SECTION WITH INDUSTRIAL BG */}
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white py-20">
+        <img
+          src={fallbackHeroImage}
+          alt="Technobel robotic welding automation cell"
+          className="absolute inset-0 -z-20 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/40" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl space-y-6">
+            <span className="inline-flex rounded-full border border-red-400/40 bg-red-600/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-red-200">
+              Technobel Automation · Project Gallery
+            </span>
+            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl font-display">
+              Automation engineered for real production.
+            </h1>
+            <p className="text-base leading-8 text-slate-200 sm:text-lg">
+              Explore robotic welding cells, automotive assembly systems, railway fixtures, and custom special-purpose machines built for safer production, consistent quality, and better cycle times.
+            </p>
+            <div className="flex flex-wrap gap-3 text-xs font-semibold">
+              {['Robotic welding', 'SPM engineering', 'Turnkey integration', 'Vision Inspection'].map((label) => (
+                <span key={label} className="rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-sm">
+                  ✓ {label}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Category Filter Tabs */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-center gap-2 glass-panel bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
-          {GALLERY_CATEGORIES.map((cat) => (
+      {/* 2. CATEGORY FILTER TABS */}
+      <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          {GALLERY_CATEGORIES.map((category) => (
             <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeCategory === cat.id
+              key={category.id}
+              type="button"
+              onClick={() => setActiveCategory(category.id)}
+              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                activeCategory === category.id
                   ? 'bg-red-600 text-white shadow-md'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              {cat.title}
+              {category.title}
             </button>
           ))}
         </div>
       </section>
 
-      {/* Categorized Gallery Content */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {sections.map((sectionTitle, sIdx) => {
-          const sectionItems = filteredItems.filter((i) => i.sectionTitle === sectionTitle);
-          if (sectionItems.length === 0) return null;
+      {/* 3. CATEGORIZED GALLERY SECTIONS */}
+      <section className="mx-auto max-w-7xl space-y-12 px-4 pt-12 sm:px-6 lg:px-8">
+        {sections.map((sectionTitle) => {
+          const items = filteredItems.filter(
+            (item) => item.sectionTitle === sectionTitle
+          );
+          if (!items.length) return null;
 
           return (
-            <div key={sIdx} className="space-y-4">
+            <div key={sectionTitle} className="space-y-6">
               
-              {/* Category Section Title with Icon */}
-              <div className="flex items-center gap-2 border-b border-slate-300 pb-2">
-                <span className="w-3 h-3 rounded-full bg-red-600"></span>
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 font-display">
+              {/* Section Header with Red Accent */}
+              <div className="flex items-center gap-3 border-b border-slate-300 pb-3">
+                <span className="h-3 w-3 rounded-full bg-red-600" />
+                <h2 className="text-xl font-extrabold text-slate-900 font-display">
                   {sectionTitle}
-                </h3>
+                </h2>
               </div>
 
-              {/* 4-Column Video Grid matching Reference Screenshot */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {sectionItems.map((item) => (
-                  <div
+              {/* 4-Column Grid Layout */}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {items.map((item) => (
+                  <motion.button
                     key={item.id}
+                    type="button"
+                    whileHover={{ y: -5 }}
                     onClick={() => setSelectedItem(item)}
-                    className="bg-white rounded-xl border border-slate-300 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col justify-between"
+                    className="group overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:shadow-xl flex flex-col justify-between"
                   >
-                    {/* Media Thumbnail Container */}
-                    <div className="relative h-48 bg-slate-950 overflow-hidden">
+                    {/* Image Container with Watermark and Play Icon */}
+                    <div className="relative h-52 overflow-hidden bg-slate-950 w-full">
                       <img
                         src={item.imageUrl}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                        onError={(e) => {
+                          e.target.src = fallbackCardImage;
+                        }}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                       />
 
-                      {/* Top Right Watermark Brand Badge matching reference */}
-                      <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-brand-dark flex items-center gap-1 border border-slate-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                      {/* Brand Watermark Badge */}
+                      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold text-slate-900 border border-slate-200 shadow">
                         <span className="text-red-600">Technobel</span> Automation
                       </div>
 
-                      {/* Center Play Icon Button Overlay for Video Items */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-red-600 transition-all border-2 border-white">
-                          <Play className="w-5 h-5 fill-white translate-x-0.5" />
-                        </div>
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/15 group-hover:bg-slate-950/30 transition-colors">
+                        <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-red-600 text-white shadow-2xl transition group-hover:scale-110">
+                          <Play className="ml-1 h-6 w-6 fill-current" />
+                        </span>
                       </div>
-
-                      {/* Video Player Bottom Control Bar Simulation */}
-                      <div className="absolute bottom-0 inset-x-0 h-1 bg-red-600"></div>
+                      
+                      <span className="absolute bottom-0 left-0 right-0 h-1 bg-red-600" />
                     </div>
 
-                    {/* Bottom Title Bar matching reference image layout */}
-                    <div className="p-3 bg-white border-t border-slate-100 text-center min-h-[56px] flex items-center justify-center">
-                      <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-snug group-hover:text-red-600 transition-colors">
+                    {/* Bottom Caption Box */}
+                    <div className="p-4 bg-white min-h-[90px] flex flex-col justify-between">
+                      <h3 className="text-xs font-bold leading-snug text-slate-800 group-hover:text-red-600 transition-colors line-clamp-2">
                         {item.title}
-                      </h4>
+                      </h3>
+                      <span className="mt-2 text-[11px] font-semibold text-brand-blue flex items-center gap-1">
+                        <span>View system details</span>
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      </span>
                     </div>
-                  </div>
+                  </motion.button>
                 ))}
               </div>
 
@@ -118,70 +150,65 @@ export default function GalleryPage({ onOpenRFQ }) {
         })}
       </section>
 
-      {/* Interactive Lightbox / Video Modal */}
+      {/* 4. LIGHTBOX SYSTEM DETAILS MODAL */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full border border-slate-700 overflow-hidden relative text-white">
-            
-            {/* Modal Close Button */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-slate-900 text-white shadow-2xl border border-slate-700">
             <button
+              type="button"
+              aria-label="Close project details"
               onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 z-20 text-slate-400 hover:text-white p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 transition-colors"
+              className="absolute right-4 top-4 z-20 rounded-full bg-slate-800/90 p-2 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="h-5 w-5" />
             </button>
 
-            {/* Video Preview Canvas */}
-            <div className="h-96 bg-black relative flex items-center justify-center">
+            <div className="relative flex h-80 items-center justify-center bg-black sm:h-96">
               <img
                 src={selectedItem.imageUrl}
                 alt={selectedItem.title}
-                className="max-h-full max-w-full object-contain opacity-80"
+                onError={(e) => {
+                  e.target.src = fallbackCardImage;
+                }}
+                className="h-full max-w-full object-contain opacity-85"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/50">
-                <div className="w-16 h-16 rounded-full bg-red-600 text-white flex items-center justify-center shadow-2xl animate-pulse">
-                  <Play className="w-8 h-8 fill-white translate-x-0.5" />
-                </div>
-                <span className="text-xs font-mono text-slate-200 bg-slate-900/80 px-3 py-1 rounded border border-slate-700">
+                <Play className="h-16 w-16 rounded-full bg-red-600 p-4 fill-white shadow-2xl animate-pulse" />
+                <span className="rounded bg-slate-900/80 px-3 py-1 text-xs text-slate-200 border border-slate-700">
                   Technobel Automation System Demo
                 </span>
               </div>
             </div>
 
-            {/* Modal Bottom Info & Quote Action */}
-            <div className="p-6 space-y-4 bg-slate-900 border-t border-slate-800">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <span className="text-red-500 text-xs font-bold uppercase tracking-wider">
-                    {selectedItem.sectionTitle}
-                  </span>
-                  <h3 className="text-xl font-bold text-white mt-0.5">{selectedItem.title}</h3>
-                  <p className="text-xs text-slate-300 mt-1">{selectedItem.caption}</p>
-                </div>
+            <div className="space-y-4 border-t border-slate-800 p-6">
+              <span className="text-xs font-bold uppercase tracking-widest text-red-400">
+                {selectedItem.sectionTitle}
+              </span>
+              <h2 className="text-2xl font-bold">{selectedItem.title}</h2>
+              <p className="text-sm text-slate-300 leading-relaxed">{selectedItem.caption}</p>
 
-                <button
-                  onClick={() => {
-                    setSelectedItem(null);
-                    if (onOpenRFQ) onOpenRFQ(selectedItem);
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition-colors flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>Inquire For This System</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedItem(null);
+                  onOpenRFQ?.(selectedItem);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-xs font-bold hover:bg-red-700 shadow-lg transition-colors"
+              >
+                Inquire For This System <ArrowRight className="h-4 w-4" />
+              </button>
 
-              <div className="pt-3 border-t border-slate-800/80 flex items-center gap-4 text-xs text-slate-400">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                  <ShieldCheck className="w-4 h-4" /> Certified CE Safety & Poka-Yoke Tested
+              <div className="flex flex-wrap gap-4 border-t border-slate-800 pt-4 text-xs text-slate-400">
+                <span className="flex items-center gap-2 text-emerald-400 font-semibold">
+                  <ShieldCheck className="h-4 w-4" /> CE safety and poka-yoke tested
                 </span>
-                <span>• Kuruli, Khed, Pune Shopfloor</span>
+                <span>• Kuruli, Khed, Pune shopfloor</span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-    </div>
+    </main>
   );
 }
